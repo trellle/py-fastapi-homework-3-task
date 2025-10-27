@@ -1,11 +1,15 @@
 from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 
 from src.database import accounts_validators
-from src.database.models.accounts import UserGroupEnum
 
 
 class UserBase(BaseModel):
     email: EmailStr
+
+    @field_validator("email")
+    def validate_email(cls, value: EmailStr):
+        accounts_validators.validate_email(value)
+        return value
 
 
 class UserRegistrationRequestSchema(UserBase):
@@ -13,13 +17,10 @@ class UserRegistrationRequestSchema(UserBase):
 
     password: str
 
-    @field_validator("email")
-    def validate_email(cls, value: EmailStr):
-        accounts_validators.validate_email(value)
-
     @field_validator("password")
     def validate_password_reliability(cls, value: str):
         accounts_validators.validate_password_strength(value)
+        return value
 
 
 class UserRegistrationResponseSchema(BaseModel):
@@ -30,3 +31,40 @@ class UserRegistrationResponseSchema(BaseModel):
 
 class UserActivationRequestSchema(UserBase):
     token: str
+
+
+class PasswordResetRequestSchema(UserBase):
+    pass
+
+
+class PasswordResetCompleteRequestSchema(UserBase):
+    token: str
+    password: str
+
+    @field_validator("password")
+    def validate_password_reliability(cls, value: str):
+        accounts_validators.validate_password_strength(value)
+        return value
+
+
+class UserLoginRequestSchema(UserBase):
+    password: str
+
+    @field_validator("password")
+    def validate_password_reliability(cls, value: str):
+        accounts_validators.validate_password_strength(value)
+        return value
+
+
+class UserLoginResponseSchema(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+
+
+class TokenRefreshRequestSchema(BaseModel):
+    refresh_token: str
+
+
+class TokenRefreshResponseSchema(BaseModel):
+    access_token: str
