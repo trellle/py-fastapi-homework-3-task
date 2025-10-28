@@ -4,6 +4,8 @@ from src.database import accounts_validators
 
 
 class UserBase(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     email: EmailStr
 
     @field_validator("email")
@@ -23,7 +25,7 @@ class UserRegistrationRequestSchema(UserBase):
         return value
 
 
-class UserRegistrationResponseSchema(BaseModel):
+class UserRegistrationResponseSchema(UserBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
